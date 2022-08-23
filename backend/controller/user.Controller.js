@@ -1,6 +1,7 @@
 const User=require('../models/user.Model')
 const jwt = require("../middlewares/jwt")
 const crypto=require("crypto")
+const bcrypt=require("bcrypt")
 const {sendEmail}=require("../middlewares/sendEmail")
 exports.register=async(req,res)=>{
     try{
@@ -306,4 +307,20 @@ exports.resetPassword=async(req,res)=>{
         })
     }
 }
- 
+exports.updatePassword=async(req,res)=>{
+    try {
+        const{email,password,newpassword}=req.body;
+        const user= await User.findOne({email}).select("+password")
+        if(!user){
+            return res.status(404).json({success:false,message:"user not found"})
+        }
+        if(bcrypt.compare(req.body.password,user.password)){
+            user.password=req.body.newpassword
+            await user.save()
+            res.status(200).json({success:true,message:"password changed succesfully"})
+        }
+        res.status(401).json({success:false,message:"Incorrect password"})
+    } catch (error) {
+        return res.status(500).json({success:false,message:error.message})
+    }
+}
