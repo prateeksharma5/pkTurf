@@ -24,10 +24,12 @@ exports.register=async(req,res)=>{
 exports.loginUser=async(req,res)=>{
     try{
         const{email,password}=req.body;
+        //console.log(req.body)
         const user= await User.findOne({email}).select("+password")
         if(!user){
             return res.status(400).json({Success:false,message:"user not found"})
         }
+        // console.log(bcrypt.compare(req.body.password,user.password))
         const isMatch=await user.matchPassword(password)
         if(!isMatch){
             return res.status(400).json({
